@@ -65,8 +65,8 @@
      <Compile Include="Assets\ARToolKit5-Unity\Scripts\ARTransitionalCamera.cs" />
      <Compile Include="Assets\ARToolKit5-Unity\Scripts\ARUtilityFunctions.cs" />
      <Compile Include="Assets\ARToolKit5-Unity\Scripts\PluginFunctions.cs" />
-     <Compile Include="Assets\CheckersBoard.cs" />
-     <Compile Include="Assets\Piece.cs" />
+     <Compile Include="Assets\Scripts\CheckersBoard.cs" />
+     <Compile Include="Assets\Scripts\Piece.cs" />
      <None Include="Assets\Plugins\Android\AndroidManifest.xml" />
      <None Include="Assets\ARToolKit5-Unity\CHANGELOG.txt" />
      <None Include="Assets\ARToolKit5-Unity\Resources\ardata\markers\patt.kanji.txt" />

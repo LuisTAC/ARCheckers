@@ -8,6 +8,7 @@ TagManager:
   - Character
   - Glove
   - Target
+  - Board
   layers:
   - Default
   - TransparentFX
@@ -19,7 +20,7 @@ TagManager:
   - 
   - AR background
   - AR foreground
-  - 
+  - Board
   - 
   - 
   - 
