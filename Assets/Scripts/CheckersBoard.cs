@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
 
 public class CheckersBoard : MonoBehaviour {
 
@@ -9,6 +10,7 @@ public class CheckersBoard : MonoBehaviour {
     public GameObject cursorPrefab;
 
     private GameObject cursor;
+    private GameObject winText;
 
     public Material grayL;
     public Material grayD;
@@ -19,18 +21,23 @@ public class CheckersBoard : MonoBehaviour {
     private Piece selectedPiece = null;
     private Vector2 selectedPieceCoords = new Vector2(-1, -1);
 
+    private bool isOver = false;
+
     // Use this for initialization
     void Start () {
         GenerateBoard();
         cursor = Instantiate(cursorPrefab, transform) as GameObject;
+        winText = transform.Find("winText").gameObject;
     }
 	
 	// Update is called once per frame
 	void Update () {
 
-        UpdateCursor();
-
-        if (Input.GetKeyDown(KeyCode.Space)) OnSpaceDown();
+        if (!isOver)
+        {
+            UpdateCursor();
+            if (Input.GetKeyDown(KeyCode.Space)) OnSpaceDown();
+        }
     }
 
     private void GenerateBoard()
@@ -106,7 +113,7 @@ public class CheckersBoard : MonoBehaviour {
                 selectedPiece.transform.position = new Vector3(selectedPiece.transform.position.x, selectedPiece.transform.position.y, selectedPiece.transform.position.z - 0.025f);
             }
         }
-        else if(selectedPiece!=null && p==null)
+        else if(selectedPiece!=null && p==null) //move
         {
             if((selectedPiece.IsWhite() && //move diagonally
                 (cursorCoords.x==selectedPieceCoords.x+1 || cursorCoords.x == selectedPieceCoords.x - 1) && (cursorCoords.y == selectedPieceCoords.y + 1)) ||
@@ -121,7 +128,7 @@ public class CheckersBoard : MonoBehaviour {
                 MovePiece(selectedPiece, (int)cursorCoords.x, (int)cursorCoords.y);
 
                 //set king
-                if ((selectedPiece.IsWhite() && cursorCoords.y == 7) || (!selectedPiece.IsWhite() && cursorCoords.y == 0))
+                if (!selectedPiece.IsKing() && ((selectedPiece.IsWhite() && cursorCoords.y == 7) || (!selectedPiece.IsWhite() && cursorCoords.y == 0)))
                 {
                     selectedPiece.setKing();
                     selectedPiece.transform.localScale = new Vector3(selectedPiece.transform.localScale.x, selectedPiece.transform.localScale.y * 2, selectedPiece.transform.localScale.z);
@@ -144,11 +151,12 @@ public class CheckersBoard : MonoBehaviour {
                 {
                     pieces[(int)cursorCoords.x, (int)cursorCoords.y] = selectedPiece;
                     pieces[(int)selectedPieceCoords.x, (int)selectedPieceCoords.y] = null;
+                    pieces[(int)(selectedPieceCoords.x + cursorCoords.x)/2, (int)(selectedPieceCoords.y + cursorCoords.y) /2] = null;
                     selectedPiece.transform.position = new Vector3(selectedPiece.transform.position.x, selectedPiece.transform.position.y, -0.031f);
                     MovePiece(selectedPiece, (int)cursorCoords.x, (int)cursorCoords.y);
 
                     //set king
-                    if ((selectedPiece.IsWhite() && cursorCoords.y == 7) || (!selectedPiece.IsWhite() && cursorCoords.y == 0))
+                    if (!selectedPiece.IsKing() && ((selectedPiece.IsWhite() && cursorCoords.y == 7) || (!selectedPiece.IsWhite() && cursorCoords.y == 0)))
                     {
                         selectedPiece.setKing();
                         selectedPiece.transform.localScale = new Vector3(selectedPiece.transform.localScale.x, selectedPiece.transform.localScale.y * 2, selectedPiece.transform.localScale.z);
@@ -159,10 +167,48 @@ public class CheckersBoard : MonoBehaviour {
                     isWhiteTurn = !isWhiteTurn;
 
                     Destroy(enemy.gameObject);
-                }
-                    
-            }
 
+                    int end = CheckEnd();
+                    if (end!=0)
+                    {
+
+                        if (end==1) //white won
+                        {
+                            winText.GetComponent<TextMesh>().text = "White wins!";
+                            winText.GetComponent<TextMesh>().color = new Color(255,255,255);
+                            winText.transform.localPosition = new Vector3(-0.15f, -0.13f, 0.0f);
+                            winText.transform.localRotation = new Quaternion(-180.0f, 0.0f, 0.0f, 0.0f);
+                        }
+                        else //black won
+                        {
+                            winText.GetComponent<TextMesh>().text = "Black wins!";
+                            winText.GetComponent<TextMesh>().color = new Color(0, 0, 0);
+                            winText.transform.localPosition = new Vector3(0.15f, -0.13f, 0.0f);
+                            winText.transform.localRotation = new Quaternion(0.0f, 0.0f, -180.0f, 0.0f);
+                        }
+                        isOver = true;
+                    }
+                }
+            }
         }
+    }
+
+    private int CheckEnd() //returns who (if game over) won; -1 for black; 1 for white
+    {
+        bool foundWhite = false;
+        bool foundBlack = false;
+        for (int y = 0; y < 8; y++)
+        {
+            for (int x = 0; x < 8; x ++)
+            {
+                Piece p = pieces[x, y];
+                if (p != null && p.IsWhite()) foundWhite = true;
+                else if (p != null && !p.IsWhite()) foundBlack = true;
+
+                if (foundWhite && foundBlack) return 0;
+            }
+        }
+
+        return (foundWhite ? 1 : -1);
     }
 }
